@@ -1,9 +1,13 @@
 ﻿@page "/editor"
+@inject IJSRuntime JSRuntime 
 
-<div id="threejscontainer">
-    <div style="width: 100%; height: 100vh; background: black;"></div>
+<div id="threejscontainer" style="width: 100%; height: 100vh;">
+
 </div>
 
 @code {
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("editor.load");
+    }
 }
