@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31025.194
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CellaioStudio.Server", "CellaioStudio\Server\CellaioStudio.Server.csproj", "{0BCA57EC-0586-4CA6-975E-7B4CEFFE70A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CellaioStudio.Server", "CellaioStudio\Server\CellaioStudio.Server.csproj", "{0BCA57EC-0586-4CA6-975E-7B4CEFFE70A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CellaioStudio.Client", "CellaioStudio\Client\CellaioStudio.Client.csproj", "{9CC89128-8DB8-42C1-A09F-05D6B1C42AA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CellaioStudio.Client", "CellaioStudio\Client\CellaioStudio.Client.csproj", "{9CC89128-8DB8-42C1-A09F-05D6B1C42AA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CellaioStudio.Shared", "CellaioStudio\Shared\CellaioStudio.Shared.csproj", "{7C66AB02-B211-43E6-A323-4DA85B082560}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CellaioStudio.Shared", "CellaioStudio\Shared\CellaioStudio.Shared.csproj", "{7C66AB02-B211-43E6-A323-4DA85B082560}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
