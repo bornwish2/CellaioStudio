@@ -1,13 +1,31 @@
 ﻿@page "/editor"
-@inject IJSRuntime JSRuntime 
+@inject IJSRuntime JSRuntime
 
-<div id="threejscontainer" style="width: 100%; height: 100vh;">
+
+<div class="editor-container">
+    <div class="toolbar-container">
+        <button class="btn-tool btn btn-primary btn-sm"
+                @onclick="AddShelve"> Shelve </button>
+    </div>
+
+    <div id="threejscontainer">
+
+    </div>
+
 
 </div>
 
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("editor.load");
+        if (firstRender)
+            await JSRuntime.InvokeVoidAsync("editor.load");
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task AddShelve()
+    {
+        await JSRuntime.InvokeVoidAsync("editor.addShelve");
     }
 }
