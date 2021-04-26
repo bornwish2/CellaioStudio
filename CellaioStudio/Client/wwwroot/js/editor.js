@@ -34,6 +34,8 @@ function loadScene() {
     
     camera.position.z = 5;
 
+    handleResizing();
+
     animate();
 }
 
@@ -44,6 +46,17 @@ function addShelve() {
     cube = new THREE.Mesh(geometry, material);
 
     scene.add(cube);
+}
+
+function handleResizing() {
+    window.addEventListener('resize', function () {
+        var width = container.clientWidth;
+        var height = container.clientHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(width, height);
+    });
 }
 
 window.editor = {
