@@ -17,6 +17,25 @@
                 Example
             </button>
         </div>
+        <div>
+            @*<a class="form-control btn btn-primary"
+              href="/download?name=project.json" target="_blank">
+               Save
+            </a>*@
+            <button class="btn-tool btn btn-primary btn-sm"
+                    @onclick="SaveScene">
+                Save
+            </button>
+        </div>
+        @*<div>
+            <button class="btn-tool btn btn-primary btn-sm"
+                    onclick="document.getElementById('inputFile').click()">
+                Load
+            </button>
+            <InputFile OnChange="@LoadScene"
+                       style="display: none;"
+                       id="inputFile" />
+        </div>*@
     </div>
 
     <div id="threejscontainer">
@@ -43,5 +62,22 @@
     private async Task ShowExample()
     {
         await JSRuntime.InvokeVoidAsync("editor.exampleProject");
+    }
+
+    private async Task LoadScene(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        byte[] content = new byte[file.Size];
+        await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)
+            .ReadAsync(content, 0, content.Length);
+        var json = System.Text.Encoding.UTF8.GetString(content);
+        await JSRuntime.InvokeVoidAsync("editor.loadFromJson", json);
+    }
+
+    private async Task SaveScene()
+    { 
+        var json = await JSRuntime.InvokeAsync<System.Text.Json.JsonElement>("editor.serializeScene");
+        var bytes = System.Text.Encoding.UTF8.GetBytes(json.GetRawText());
+        await JSRuntime.SaveAsFile(bytes, "project.json");
     }
 }

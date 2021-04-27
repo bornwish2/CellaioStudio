@@ -5,6 +5,8 @@ var container;
 var scene, camera, renderer, controls;
 
 var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
+
+var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
 var shelves;
 const shelveThickness = 0.0682;
 
@@ -50,6 +52,24 @@ function loadScene() {
     handleResizing();
 
     animate();
+}
+
+function getSceneJson() {
+    return scene.toJSON();
+}
+
+function loadFromJson(json) {
+    while (scene.children.length > 0) {
+        scene.remove(scene.children[0]);
+    }
+
+    var loader = new THREE.ObjectLoader();
+    
+    loader.parse(json, function (result) {
+        scene = result
+    });
+    render();
+    //scene = new THREE.ObjectLoader().parse(json);
 }
 
 function loadRoom() {
@@ -148,7 +168,6 @@ function handleResizing() {
     });
 }
 
-var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
 function createShelve(length, depth = 0.4, thickness = shelveThickness) {
     var geometry = new THREE.BoxGeometry(length, thickness, depth);
     var material = new THREE.MeshPhongMaterial({ map: shelveTexture });
@@ -203,7 +222,9 @@ function exampleProject() {
 window.editor = {
     load: () => { loadScene(); },
     exampleProject: () => { exampleProject(); },
-    addShelve: () => { addShelve(); }
+    addShelve: () => { addShelve(); },
+    serializeScene: () => { return getSceneJson(); },
+    loadFromJson: json => { loadFromJson(json); }
 }
 
 window.onload = loadScene;
