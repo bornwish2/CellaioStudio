@@ -1,5 +1,6 @@
 ﻿import * as THREE from "../js/three.module.js"
 import { OrbitControls } from "../js/OrbitControls.js"
+import { exampleProject } from "../js/exampleProject.js"
 
 var container;
 var scene, camera, renderer, controls;
@@ -175,53 +176,14 @@ function createShelve(length, depth = 0.4, thickness = shelveThickness) {
     return cube;
 }
 
-function exampleProject() {
-
-    // 1374 from bottom to top
-    var s1 = createShelve(1.3);
-    var s2 = createShelve(1.7);
-    var s3 = createShelve(1.7);
-    var s4 = createShelve(1.7);
-    var s5 = createShelve(1.3);
-    s1.position.set(1.45, 0.5, 0.2);
-    s2.position.set(1.65, 0.9, 0.2);
-    s3.position.set(1.65, 1.3, 0.2);
-    s4.position.set(1.65, 1.7, 0.2);
-    s5.position.set(1.85, 2.1, 0.2);
-
-    var h1 = createShelve(0.4 - shelveThickness);
-    var h2 = createShelve(0.4 - shelveThickness);
-    var h3 = createShelve(0.4 - shelveThickness);
-    var h4 = createShelve(0.4 - shelveThickness);
-    var h5 = createShelve(0.4 - shelveThickness);
-    var h6 = createShelve(0.4 - shelveThickness);
-    var h7 = createShelve(0.4 - shelveThickness);
-    var h8 = createShelve(0.4 - shelveThickness);
-
-    h1.rotateZ(Math.PI / 2);
-    h2.rotateZ(Math.PI / 2);
-    h3.rotateZ(Math.PI / 2);
-    h4.rotateZ(Math.PI / 2);
-    h5.rotateZ(Math.PI / 2);
-    h6.rotateZ(Math.PI / 2);
-    h7.rotateZ(Math.PI / 2);
-    h8.rotateZ(Math.PI / 2);
-    h1.position.set(0.8 + shelveThickness / 2, 0.7, 0.2);
-    h2.position.set(1.2 + shelveThickness / 2, 0.7, 0.2);
-    h3.position.set(2.1 - shelveThickness / 2, 1.1, 0.2);
-    h4.position.set(2.5 - shelveThickness / 2, 1.1, 0.2);
-    h5.position.set(0.8 + shelveThickness / 2, 1.5, 0.2);
-    h6.position.set(1.2 + shelveThickness / 2, 1.5, 0.2);
-    h7.position.set(2.1 - shelveThickness / 2, 1.9, 0.2);
-    h8.position.set(2.5 - shelveThickness / 2, 1.9, 0.2);
-
-    scene.add(s1, s2, s3, s4, s5);
-    scene.add(h1, h2, h3, h4, h5, h6, h7, h8);
+function showExample() {
+    var ex = new exampleProject();
+    ex.load(scene);
 }
 
 window.editor = {
     load: () => { loadScene(); },
-    exampleProject: () => { exampleProject(); },
+    exampleProject: () => { showExample(); },
     addShelve: () => { addShelve(); },
     serializeScene: () => { return getSceneJson(); },
     loadFromJson: json => { loadFromJson(json); }
