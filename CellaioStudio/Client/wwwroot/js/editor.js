@@ -64,13 +64,11 @@ function loadFromJson(json) {
         scene.remove(scene.children[0]);
     }
 
+    var data = JSON.parse(json);
     var loader = new THREE.ObjectLoader();
-    
-    loader.parse(json, function (result) {
+    loader.parse(data, function (result) {
         scene = result
     });
-    render();
-    //scene = new THREE.ObjectLoader().parse(json);
 }
 
 function loadRoom() {
