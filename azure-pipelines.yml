@@ -1,0 +1,16 @@
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: CmdLine@2
+  inputs:
+    script: |
+      git config --global user.email ""
+      git config --global user.name ""
+      git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
+      git push https://$(AzureDevOps.PAT)@dev.azure.com/ppiorun/_git/CellaioStudio -u --all
+    
