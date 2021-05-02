@@ -10,7 +10,7 @@ var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
 var shelves, selectedShelve;
-var isDragging, dragStart, lastMousePoint;
+var isDragging, dragStart, lastMousePoint, mousedown = 0;
 const shelveThickness = 0.0682;
 
 function render() {
@@ -185,6 +185,10 @@ function handleResizing() {
 
 function onMouseMove(event) {
 
+    if (!isDragging && selectedShelve != null && mousedown) {
+        isDragging = true;
+    }
+
     if (isDragging) {
         if (controls.enabled)
             controls.enabled = false;
@@ -220,6 +224,7 @@ function onMouseMove(event) {
 
 function onDocumentMouseDown(event) {
 
+    ++mousedown;
     event.preventDefault;
     mouseVector.x = 2 * (event.offsetX / container.clientWidth) - 1;
     mouseVector.y = 1 - 2 * (event.offsetY / container.clientHeight);
@@ -227,15 +232,24 @@ function onDocumentMouseDown(event) {
     raycaster.setFromCamera(mouseVector, camera);
     var intersects = raycaster.intersectObjects(shelves.children);
 
-    if (intersects.length == 0) return;
+    if (selectedShelve != null)
+        selectedShelve.material.color.setRGB(1, 1, 1);
+
+    if (intersects.length == 0) {
+        selectedShelve = null;
+        return;
+    }
+
     selectedShelve = intersects[0].object;
     selectedShelve.material.color.setRGB(1, 0, 0);
-    isDragging = true;
 }
 
 function onDocumentMouseUp(event) {
 
+    --mousedown;
     controls.enabled = true;
+    if (!isDragging) return;
+
     isDragging = false;
     dragStart = null;
     if (selectedShelve == null) return;
