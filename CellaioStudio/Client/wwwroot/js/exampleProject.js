@@ -14,7 +14,7 @@ class exampleProject {
         return cube;
     }
 
-    load(scene) {
+    load(scene, shelves) {
 
         // 1374 from bottom to top
         var s1 = this.createShelve(1.3);
@@ -54,8 +54,8 @@ class exampleProject {
         h7.position.set(2.1 - this.shelveThickness / 2, 1.9, 0.2);
         h8.position.set(2.5 - this.shelveThickness / 2, 1.9, 0.2);
 
-        scene.add(s1, s2, s3, s4, s5);
-        scene.add(h1, h2, h3, h4, h5, h6, h7, h8);
+        shelves.add(s1, s2, s3, s4, s5);
+        shelves.add(h1, h2, h3, h4, h5, h6, h7, h8);
     }
 }
 

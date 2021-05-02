@@ -4,11 +4,13 @@ import { exampleProject } from "../js/exampleProject.js"
 
 var container;
 var scene, camera, renderer, controls;
+var raycaster, mouseVector;
 
 var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
-var shelves;
+var shelves, selectedShelve;
+var isDragging, dragVector, dragStart;
 const shelveThickness = 0.0682;
 
 function render() {
@@ -29,6 +31,14 @@ function loadScene() {
     }
 
     scene = new THREE.Scene();
+    raycaster = new THREE.Raycaster();
+    mouseVector = new THREE.Vector2();
+    shelves = new THREE.Object3D();
+    scene.add(shelves);
+
+    container.addEventListener('mousemove', onMouseMove, false);
+    container.addEventListener('mousedown', onDocumentMouseDown, false);
+    container.addEventListener('mouseup', onDocumentMouseUp, false);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -152,8 +162,9 @@ function addShelve() {
 
     var shv = createShelve(1, 0.4);
     shv.position.set(0.75, 1, 0.2);
+    shelves.add(shv);
 
-    scene.add(shv);
+    //scene.add(shv);
 }
 
 function handleResizing() {
@@ -167,6 +178,73 @@ function handleResizing() {
     });
 }
 
+function onMouseMove(event) {
+
+    if (isDragging) {
+        if (controls.enabled)
+            controls.enabled = false;
+        handleDrag(event);
+        return;
+    }
+
+    mouseVector.x = 2 * (event.offsetX / container.clientWidth) - 1;
+    mouseVector.y = 1 - 2 * (event.offsetY / container.clientHeight);
+
+    raycaster.setFromCamera(mouseVector, camera);
+
+    var intersects = raycaster.intersectObjects(shelves.children);
+
+    for (var i = 0; i < shelves.children.length; i++) {
+        if (shelves.children[i] != selectedShelve)
+            shelves.children[i].material.color.setRGB(1, 1, 1);
+    }
+
+    if (intersects.length > 0) {
+        var obj = intersects[0].object;
+        if (obj != selectedShelve)
+            obj.material.color.setRGB(0.7, 0.8, 1);
+    }
+
+    if (intersects.length > 0) {
+        renderer.domElement.style.cursor = 'pointer';
+    }
+    else {
+        renderer.domElement.style.cursor = 'auto';
+    }
+}
+
+function onDocumentMouseDown(event) {
+
+    event.preventDefault;
+    mouseVector.x = 2 * (event.offsetX / container.clientWidth) - 1;
+    mouseVector.y = 1 - 2 * (event.offsetY / container.clientHeight);
+
+    raycaster.setFromCamera(mouseVector, camera);
+    var intersects = raycaster.intersectObjects(shelves.children);
+
+    if (intersects.length == 0) return;
+    selectedShelve = intersects[0].object;
+    selectedShelve.material.color.setRGB(1, 0, 0);
+    isDragging = true;
+}
+
+function onDocumentMouseUp(event) {
+
+    controls.enabled = true;
+    isDragging = false;
+    dragStart = null;
+    if (selectedShelve == null) return;
+    selectedShelve.material.color.setRGB(1, 1, 1);
+    selectedShelve = null;
+}
+
+function handleDrag(events) {
+
+    if (!isDragging) return;
+
+    // todo
+}
+
 function createShelve(length, depth = 0.4, thickness = shelveThickness) {
     var geometry = new THREE.BoxGeometry(length, thickness, depth);
     var material = new THREE.MeshPhongMaterial({ map: shelveTexture });
@@ -176,7 +254,7 @@ function createShelve(length, depth = 0.4, thickness = shelveThickness) {
 
 function showExample() {
     var ex = new exampleProject();
-    ex.load(scene);
+    ex.load(scene, shelves);
 }
 
 window.editor = {
