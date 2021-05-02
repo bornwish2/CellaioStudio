@@ -78,6 +78,11 @@ function loadFromJson(json) {
     var loader = new THREE.ObjectLoader();
     loader.parse(data, function (result) {
         scene = result
+        for (var i = 0; i < scene.children.length; i++) {
+            var obj = scene.children[i];
+            if (obj.children != null && obj.children.length > 0)
+                shelves = obj;
+        }
     });
 }
 
