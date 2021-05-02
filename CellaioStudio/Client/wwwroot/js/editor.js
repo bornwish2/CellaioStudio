@@ -278,7 +278,7 @@ function handleDrag(event) {
 
     var newX = selectedShelve.position.x + (-1) * 6 * diffX;
     var newY = selectedShelve.position.y + 4 * diffY;
-    if (validateCoordinates(newX, newY, selectedShelve.position.z)) {
+    if (validateCoordinates(newX, newY, selectedShelve.position.z, selectedShelve)) {
         selectedShelve.position.x = newX;
         selectedShelve.position.y = newY;
     }
@@ -287,11 +287,29 @@ function handleDrag(event) {
     lastMousePoint.y = event.offsetY;
 }
 
-function validateCoordinates(x, y, z) {
-    if (x < 0 || x > 3
-        || y < 0 || y > 2.5)
+function validateCoordinates(x, y, z, shelve) {
+
+    if (shelve == null)
         return false;
 
+    var maxHeight = 2.5;
+    var maxWidth = 3;
+    var minHeight = 0;
+    var minWidth = 0;
+
+    if (shelve.rotation.z == 0) {
+        var width = shelve.geometry.parameters.width;
+        if (x < minWidth + width / 2 || x > maxWidth - width / 2
+            || y < minHeight + shelveThickness / 2 || y > maxHeight - shelveThickness / 2)
+            return false;
+    }
+    else {
+        var height = shelve.geometry.parameters.width;
+        if (y < minHeight + height / 2 || y > maxHeight - height / 2
+            || x < minWidth + shelveThickness / 2 || x > maxWidth - shelveThickness / 2)
+            return false;
+    }
+    
     return true;
 }
 
