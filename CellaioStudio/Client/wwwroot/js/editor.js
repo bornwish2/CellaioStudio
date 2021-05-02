@@ -276,11 +276,23 @@ function handleDrag(event) {
     var diffY = lastMousePoint.y - event.offsetY;
     diffY /= container.clientHeight;
 
-    selectedShelve.position.x += (-1) * 6 * diffX;
-    selectedShelve.position.y += 4 * diffY;
+    var newX = selectedShelve.position.x + (-1) * 6 * diffX;
+    var newY = selectedShelve.position.y + 4 * diffY;
+    if (validateCoordinates(newX, newY, selectedShelve.position.z)) {
+        selectedShelve.position.x = newX;
+        selectedShelve.position.y = newY;
+    }
 
     lastMousePoint.x = event.offsetX;
     lastMousePoint.y = event.offsetY;
+}
+
+function validateCoordinates(x, y, z) {
+    if (x < 0 || x > 3
+        || y < 0 || y > 2.5)
+        return false;
+
+    return true;
 }
 
 function createShelve(length, depth = 0.4, thickness = shelveThickness) {
