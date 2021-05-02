@@ -10,7 +10,7 @@ var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
 var shelves, selectedShelve;
-var isDragging, dragVector, dragStart;
+var isDragging, dragStart, lastMousePoint;
 const shelveThickness = 0.0682;
 
 function render() {
@@ -238,11 +238,30 @@ function onDocumentMouseUp(event) {
     selectedShelve = null;
 }
 
-function handleDrag(events) {
+function handleDrag(event) {
 
     if (!isDragging) return;
 
-    // todo
+    if (dragStart == null) {
+        dragStart = new THREE.Vector2();
+        dragStart.x = event.offsetX;
+        dragStart.y = event.offsetY;
+
+        lastMousePoint = new THREE.Vector2();
+        lastMousePoint.x = dragStart.x;
+        lastMousePoint.y = dragStart.y;
+    }
+
+    var diffX = lastMousePoint.x - event.offsetX;
+    diffX /= container.clientWidth;
+    var diffY = lastMousePoint.y - event.offsetY;
+    diffY /= container.clientHeight;
+
+    selectedShelve.position.x += (-1) * 6 * diffX;
+    selectedShelve.position.y += 4 * diffY;
+
+    lastMousePoint.x = event.offsetX;
+    lastMousePoint.y = event.offsetY;
 }
 
 function createShelve(length, depth = 0.4, thickness = shelveThickness) {
