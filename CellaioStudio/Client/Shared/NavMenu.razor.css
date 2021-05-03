@@ -1,5 +1,10 @@
+.navbar {
+    padding: 0;
+}
+
 .navbar-toggler {
     background-color: rgba(255, 255, 255, 0.1);
+    margin: 0 1rem;
 }
 
 .top-row {
@@ -8,7 +13,12 @@
 }
 
 .navbar-brand {
-    font-size: 1.1rem;
+    font-size: 0.8rem;
+    max-width: 131px;
+    white-space: unset;
+    text-align: center;
+    margin: 0;
+    padding: 0 1rem;
 }
 
 .oi {

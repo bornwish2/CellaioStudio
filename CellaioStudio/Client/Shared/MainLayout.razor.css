@@ -3,6 +3,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    background: #3e3e42;
+    color: #f7f7f7;
 }
 
 .main {
