@@ -224,7 +224,7 @@ function onMouseMove(event) {
 
 function onDocumentMouseDown(event) {
 
-    ++mousedown;
+    mousedown = 1;
     event.preventDefault;
     mouseVector.x = 2 * (event.offsetX / container.clientWidth) - 1;
     mouseVector.y = 1 - 2 * (event.offsetY / container.clientHeight);
@@ -246,7 +246,7 @@ function onDocumentMouseDown(event) {
 
 function onDocumentMouseUp(event) {
 
-    --mousedown;
+    mousedown = 0;
     controls.enabled = true;
     if (!isDragging) return;
 
