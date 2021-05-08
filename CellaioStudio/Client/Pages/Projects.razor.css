@@ -1,24 +1,39 @@
 ﻿.projects-container {
    padding: 1rem;
+   display: flex;
+   flex-wrap: wrap;
+   position: relative;
+}
+
+.projects-title {
+    padding: 1rem 1rem 0 1rem;
 }
 
 .project-item {
     background: var(--item-background);
     box-shadow: 0 0 10px var(--item-shadow);
-    color: var(--foreground);
-    padding: 0.5rem;
+    color: transparent;
     margin: 1rem;
-    width: 250px;
-    min-height: 100px;
-    line-height: 100px;
-    max-height: 200px;
+    width: 300px;
+    height: 200px;
     cursor: pointer;
     border: 0;
     border-radius: 6px;
     text-align: center;
-    vertical-align: central;
 }
 
 .project-item:hover {
     background: var(--item-background-hover);
+    color: var(--foreground);
+}
+
+.project-image {
+    width: 100%;
+    padding: 0.5rem;
+    margin: auto;
+}
+
+.project-text {
+    position: absolute;
+    margin: auto;
 }

@@ -2,8 +2,10 @@
 @inject NavigationManager navManager
 @inject IProjectsRepository projectsRepository
 
-<div class="projects-container">
+<div class="projects-title">
     <h3>Projects</h3>
+</div>
+<div class="projects-container">
 
     @if (projects != null)
     {
@@ -11,7 +13,12 @@
         {
             <div class="project-item"
                  @onclick="() => OpenProject(project.ID)">
-                @project.Title (#@project.ID)
+                <div class="project-image">
+                    <img src="@project.Thumbnail" style="width: 100%;" />
+                </div>
+                <div class="project-text">
+                    @project.Title (#@project.ID)
+                </div>
             </div>
         }
     }

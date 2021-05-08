@@ -10,5 +10,6 @@ namespace CellaioStudio.Shared.Models
     {
         public int ID { get; set; }
         public string Title { get; set; }
+        public string Thumbnail { get; set; }
     }
 }
