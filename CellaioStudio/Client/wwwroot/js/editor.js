@@ -45,7 +45,7 @@ function loadScene(dotnetInstance) {
     container.addEventListener('contextmenu', onContextMenu, false);
     container.addEventListener('dblclick', onDoubleClick, false);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
@@ -400,6 +400,10 @@ function hideLengthEdit() {
     dotnetEditor.invokeMethodAsync('HideLengthEdit');
 }
 
+function saveSnapshot() {
+    return renderer.domElement.toDataURL("image/jpeg");
+}
+
 window.editor = {
     load: instance => { loadScene(instance); },
     exampleProject: () => { showExample(); },
@@ -408,7 +412,8 @@ window.editor = {
     loadFromJson: json => { loadFromJson(json); },
     rotateShelve: () => { rotateShelve(); },
     removeShelve: () => { removeShelve(); },
-    setLength: len => { setShelveLength(len);}
+    setLength: len => { setShelveLength(len); },
+    saveSnapshot: () => { return saveSnapshot(); }
 }
 
 window.onload = loadScene;

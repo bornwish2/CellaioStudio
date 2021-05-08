@@ -27,6 +27,12 @@
                        style="display: none;"
                        id="inputFile" />
         </div>
+        <div>
+            <button class="btn-tool btn btn-primary btn-sm"
+                    @onclick="SaveSnapshot">
+                Snapshot
+            </button>
+        </div>
     </div>
 
     <ContextMenu Items="ContextMenuItems"
@@ -171,5 +177,20 @@
         var json = await JSRuntime.InvokeAsync<System.Text.Json.JsonElement>("editor.serializeScene");
         var bytes = System.Text.Encoding.UTF8.GetBytes(json.GetRawText());
         await JSRuntime.SaveAsFile(bytes, "project.json");
+    }
+
+    private async Task SaveSnapshot()
+    {
+        try
+        {
+            var snapshot = await JSRuntime.InvokeAsync<string>("editor.saveSnapshot");
+            var data = snapshot.Split(',')[1];
+            var bytes = Convert.FromBase64String(data);
+            await JSRuntime.SaveAsFile(bytes, "snapshot.jpeg");
+        }
+        catch (Exception x)
+        {
+            Console.WriteLine(x.Message);
+        }
     }
 }
