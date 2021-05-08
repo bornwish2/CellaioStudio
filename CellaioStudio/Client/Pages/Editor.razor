@@ -24,11 +24,11 @@
             </button>
         </div>
         @*<div>
-            <button class="btn-tool btn btn-primary btn-sm"
-                    @onclick="SaveScene">
-                Save
-            </button>
-        </div>*@
+                <button class="btn-tool btn btn-primary btn-sm"
+                        @onclick="SaveScene">
+                    Save
+                </button>
+            </div>*@
         <div>
             <button class="btn-tool btn btn-primary btn-sm"
                     onclick="document.getElementById('inputFile').click()">
@@ -40,6 +40,11 @@
         </div>
     </div>
 
+        <ContextMenu Items="ContextMenuItems"
+                     @bind-IsShown="isContextMenuShown"
+                     X="contextMenuX"
+                     Y="contextMenuY"/>
+
     <div id="threejscontainer">
 
     </div>
@@ -48,10 +53,42 @@
 </div>
 
 @code {
+    public List<ContextMenuItem> ContextMenuItems => contextMenuItems
+        ?? (contextMenuItems = CreateContextMenuItems());
+    private List<ContextMenuItem> contextMenuItems;
+    bool isContextMenuShown;
+    int contextMenuX, contextMenuY;
+
+    List<ContextMenuItem> CreateContextMenuItems()
+    {
+        return new List<ContextMenuItem>()
+    {
+            new ContextMenuItem("Rotate", async () => await RotateShelve()),
+            new ContextMenuItem("Remove", async () => await RemoveShelve())
+        };
+    }
+
+    [JSInvokable]
+    public async Task ShowContextMenu(int x, int y)
+    {
+        isContextMenuShown = false;
+        contextMenuX = x;
+        contextMenuY = y;
+        isContextMenuShown = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task HideContextMenu()
+    {
+        isContextMenuShown = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            await JSRuntime.InvokeVoidAsync("editor.load");
+            await JSRuntime.InvokeAsync<Editor>("editor.load", DotNetObjectReference.Create(this));
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -59,6 +96,16 @@
     private async Task AddShelve()
     {
         await JSRuntime.InvokeVoidAsync("editor.addShelve");
+    }
+
+    private async Task RotateShelve()
+    {
+        await JSRuntime.InvokeVoidAsync("editor.rotateShelve");
+    }
+
+    private async Task RemoveShelve()
+    {
+        await JSRuntime.InvokeVoidAsync("editor.removeShelve");
     }
 
     private async Task ShowExample()

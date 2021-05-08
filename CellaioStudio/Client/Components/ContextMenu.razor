@@ -1,0 +1,29 @@
+﻿@if (IsShown)
+{
+    <div class="context-menu"
+         style="left: @(X + "px"); top: @(Y + "px");">
+        @if (Items != null)
+        {
+            @foreach (var item in Items)
+            {
+                <div class="context-menu-item"
+                     @onclick="() => { item.Action?.Invoke(); IsShown = false; IsShownChanged.InvokeAsync(false); }">
+                    @item.Title
+                </div>
+                @if (Items?.IndexOf(item) < Items.Count - 1)
+                {
+                    <div class="context-menu-separator"></div>
+                }
+            }
+        }
+    </div>
+}
+
+
+@code {
+    [Parameter] public List<ContextMenuItem> Items { get; set; }
+    [Parameter] public bool IsShown { get; set; }
+    [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
+    [Parameter] public int X { get; set; }
+    [Parameter] public int Y { get; set; }
+}

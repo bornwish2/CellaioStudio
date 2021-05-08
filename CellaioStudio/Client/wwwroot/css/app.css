@@ -1,5 +1,11 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+:root {
+    --background: #121212;
+    --background-hover: #303030;
+    --separator: #3e3e42;
+}
+
 html, body {
     font-family: Candara;
     height: 100%;

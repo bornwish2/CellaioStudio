@@ -1,0 +1,25 @@
+﻿.context-menu {
+    background: var(--background);
+    border: 1px solid var(--separator);
+    border-radius: 3px;
+    position: absolute;
+    width: auto;
+    z-index: 100;
+    text-align: center;
+}
+
+.context-menu-item {
+    text-align: center;
+    cursor: pointer;
+    padding: 0.1rem 0.5rem;
+}
+
+.context-menu-item:hover {
+    background: var(--background-hover);
+}
+
+.context-menu-separator {
+    margin: 0 0.5rem;
+    height: 1px;
+    background: var(--separator);
+}

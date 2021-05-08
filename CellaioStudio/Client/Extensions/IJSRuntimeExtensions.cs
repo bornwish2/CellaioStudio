@@ -10,5 +10,10 @@ namespace CellaioStudio.Client.Extensions
         {
             await js.InvokeVoidAsync("saveAsFile", fileName, bytes);
         }
+
+        public static async Task Alert(this IJSRuntime js, string message)
+        {
+            await js.InvokeVoidAsync("alert", message);
+        }
     }
 }

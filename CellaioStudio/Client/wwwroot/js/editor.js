@@ -13,6 +13,8 @@ var shelves, selectedShelve;
 var isDragging, dragStart, lastMousePoint, mousedown = 0;
 const shelveThickness = 0.0682;
 
+var dotnetEditor;
+
 function render() {
     controls.update();
     renderer.render(scene, camera);
@@ -23,8 +25,9 @@ function animate() {
     render();
 }
 
-function loadScene() {
+function loadScene(dotnetInstance) {
 
+    dotnetEditor = dotnetInstance;
     container = document.getElementById('threejscontainer');
     if (!container) {
         return;
@@ -39,6 +42,7 @@ function loadScene() {
     container.addEventListener('mousemove', onMouseMove, false);
     container.addEventListener('mousedown', onDocumentMouseDown, false);
     container.addEventListener('mouseup', onDocumentMouseUp, false);
+    container.addEventListener('contextmenu', onContextMenu, false);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -237,11 +241,17 @@ function onDocumentMouseDown(event) {
 
     if (intersects.length == 0) {
         selectedShelve = null;
+        hideContextMenu();
         return;
     }
 
     selectedShelve = intersects[0].object;
     selectedShelve.material.color.setRGB(1, 0, 0);
+}
+
+function onContextMenu(event) {
+    if (selectedShelve == null) return;
+    showContextMenu(event.offsetX, event.offsetY);
 }
 
 function onDocumentMouseUp(event) {
@@ -320,17 +330,38 @@ function createShelve(length, depth = 0.4, thickness = shelveThickness) {
     return cube;
 }
 
+function rotateShelve() {
+    if (selectedShelve == null) return;
+    selectedShelve.rotateZ(Math.PI / 2);
+}
+
+function removeShelve() {
+    if (selectedShelve == null) return;
+    shelves.remove(selectedShelve);
+    selectedShelve.remove();
+}
+
 function showExample() {
     var ex = new exampleProject();
     ex.load(scene, shelves);
 }
 
+function showContextMenu (x, y) {
+    dotnetEditor.invokeMethodAsync('ShowContextMenu', x, y);
+}
+
+function hideContextMenu() {
+    dotnetEditor.invokeMethodAsync('HideContextMenu');
+}
+
 window.editor = {
-    load: () => { loadScene(); },
+    load: instance => { loadScene(instance); },
     exampleProject: () => { showExample(); },
     addShelve: () => { addShelve(); },
     serializeScene: () => { return getSceneJson(); },
-    loadFromJson: json => { loadFromJson(json); }
+    loadFromJson: json => { loadFromJson(json); },
+    rotateShelve: () => { rotateShelve(); },
+    removeShelve: () => { removeShelve(); }
 }
 
 window.onload = loadScene;

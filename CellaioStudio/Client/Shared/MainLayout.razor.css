@@ -13,8 +13,8 @@
 }
 
 .sidebar {
-    background-color: #121212;
-    border-right: 1px solid #3e3e42;
+    background-color: var(--background);
+    border-right: 1px solid var(--separator);
 }
 
 .top-row {
