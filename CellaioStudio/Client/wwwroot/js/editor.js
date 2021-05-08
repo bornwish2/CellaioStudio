@@ -303,20 +303,23 @@ function handleDrag(event) {
 
     var newX = selectedShelve.position.x + (-1) * 6 * diffX;
     var newY = selectedShelve.position.y + 4 * diffY;
-    if (validateCoordinates(newX, newY, selectedShelve.position.z, selectedShelve)) {
-        selectedShelve.position.x = newX;
-        selectedShelve.position.y = newY;
-    }
+    var newPoint = { x: newX, y: newY };
+    validateCoordinates(newPoint, selectedShelve.position.z, selectedShelve);
+
+    selectedShelve.position.x = newPoint.x;
+    selectedShelve.position.y = newPoint.y;
 
     lastMousePoint.x = event.offsetX;
     lastMousePoint.y = event.offsetY;
 }
 
-function validateCoordinates(x, y, z, shelve) {
+function validateCoordinates(point, z, shelve) {
 
     if (shelve == null)
-        return false;
+        return;
 
+    var x = point.x;
+    var y = point.y;
     var maxHeight = 2.5;
     var maxWidth = 3;
     var minHeight = 0;
@@ -324,18 +327,28 @@ function validateCoordinates(x, y, z, shelve) {
 
     if (shelve.rotation.z == 0) {
         var width = shelve.geometry.parameters.width;
-        if (x < minWidth + width / 2 || x > maxWidth - width / 2
-            || y < minHeight + shelveThickness / 2 || y > maxHeight - shelveThickness / 2)
-            return false;
+        if (x < minWidth + width / 2)
+            point.x = minWidth + width / 2;
+        else if (x > maxWidth - width / 2)
+            point.x = maxWidth - width / 2;
+
+        if (y < minHeight + shelveThickness / 2)
+            point.y = minHeight + shelveThickness / 2;
+        else if (y > maxHeight - shelveThickness / 2)
+            point.y = maxHeight - shelveThickness / 2;
     }
     else {
         var height = shelve.geometry.parameters.width;
-        if (y < minHeight + height / 2 || y > maxHeight - height / 2
-            || x < minWidth + shelveThickness / 2 || x > maxWidth - shelveThickness / 2)
-            return false;
+        if (y < minHeight + height / 2)
+            point.y = minHeight + height / 2;
+        else if (y > maxHeight - height / 2)
+            point.y = maxHeight - height / 2;
+
+        if (x < minWidth + shelveThickness / 2)
+            point.x = minWidth + shelveThickness / 2;
+        else if (x > maxWidth - shelveThickness / 2)
+            point.x = maxWidth - shelveThickness / 2;
     }
-    
-    return true;
 }
 
 function createShelve(length, depth = 0.4, thickness = shelveThickness) {
