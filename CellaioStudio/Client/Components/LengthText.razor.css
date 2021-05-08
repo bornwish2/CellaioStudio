@@ -1,0 +1,23 @@
+﻿.length-text-container {
+    position: absolute;
+    z-index: 101;
+    margin: 0.2rem; 
+    background: var(--background);
+    border-radius: 6px;
+    border: 1px solid var(--separator);
+}
+
+.length-text-input {
+    width: 3rem;
+    border-radius: 6px;
+    background: var(--background-hover);
+    color: var(--foreground);
+    border: 0;
+    padding: 0.1rem 0.2rem;
+    margin: 0.1rem;
+    outline: 0;
+}
+
+.length-text-input::selection {
+    background: var(--text-selection);
+}

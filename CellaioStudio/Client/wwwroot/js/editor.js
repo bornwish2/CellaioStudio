@@ -43,6 +43,7 @@ function loadScene(dotnetInstance) {
     container.addEventListener('mousedown', onDocumentMouseDown, false);
     container.addEventListener('mouseup', onDocumentMouseUp, false);
     container.addEventListener('contextmenu', onContextMenu, false);
+    container.addEventListener('dblclick', onDoubleClick, false);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -230,8 +231,26 @@ function onDocumentMouseDown(event) {
 
     mousedown = 1;
     event.preventDefault;
-    mouseVector.x = 2 * (event.offsetX / container.clientWidth) - 1;
-    mouseVector.y = 1 - 2 * (event.offsetY / container.clientHeight);
+    handleClick(event.offsetX, event.offsetY);
+}
+
+function onContextMenu(event) {
+    if (selectedShelve == null) return;
+    showContextMenu(event.offsetX, event.offsetY);
+}
+
+function onDoubleClick(event) {
+
+    handleClick(event.offsetX, event.offsetY);
+    if (selectedShelve == null) return;
+
+    showLengthEdit(event.offsetX, event.offsetY, selectedShelve.geometry.parameters.width);
+}
+
+function handleClick(x, y) {
+
+    mouseVector.x = 2 * (x / container.clientWidth) - 1;
+    mouseVector.y = 1 - 2 * (y / container.clientHeight);
 
     raycaster.setFromCamera(mouseVector, camera);
     var intersects = raycaster.intersectObjects(shelves.children);
@@ -242,16 +261,12 @@ function onDocumentMouseDown(event) {
     if (intersects.length == 0) {
         selectedShelve = null;
         hideContextMenu();
+        hideLengthEdit();
         return;
     }
 
     selectedShelve = intersects[0].object;
     selectedShelve.material.color.setRGB(1, 0, 0);
-}
-
-function onContextMenu(event) {
-    if (selectedShelve == null) return;
-    showContextMenu(event.offsetX, event.offsetY);
 }
 
 function onDocumentMouseUp(event) {
@@ -341,17 +356,35 @@ function removeShelve() {
     selectedShelve.remove();
 }
 
+function setShelveLength(len) {
+    if (selectedShelve == null) return;
+
+    var currParams = selectedShelve.geometry.parameters;
+    var height = currParams.height;
+    var depth = currParams.depth;
+    var geom = new THREE.BoxGeometry(len, height, depth);
+    selectedShelve.geometry = geom;
+}
+
 function showExample() {
     var ex = new exampleProject();
     ex.load(scene, shelves);
 }
 
-function showContextMenu (x, y) {
+function showContextMenu(x, y) {
+    hideLengthEdit();
     dotnetEditor.invokeMethodAsync('ShowContextMenu', x, y);
 }
 
 function hideContextMenu() {
     dotnetEditor.invokeMethodAsync('HideContextMenu');
+}
+
+function showLengthEdit(x, y, length) {
+    dotnetEditor.invokeMethodAsync('ShowLengthEdit', x, y, length);
+}
+function hideLengthEdit() {
+    dotnetEditor.invokeMethodAsync('HideLengthEdit');
 }
 
 window.editor = {
@@ -361,7 +394,8 @@ window.editor = {
     serializeScene: () => { return getSceneJson(); },
     loadFromJson: json => { loadFromJson(json); },
     rotateShelve: () => { rotateShelve(); },
-    removeShelve: () => { removeShelve(); }
+    removeShelve: () => { removeShelve(); },
+    setLength: len => { setShelveLength(len);}
 }
 
 window.onload = loadScene;

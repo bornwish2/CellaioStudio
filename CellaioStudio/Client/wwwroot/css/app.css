@@ -1,9 +1,11 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 :root {
+    --foreground: #f7f7f7;
     --background: #121212;
     --background-hover: #303030;
     --separator: #3e3e42;
+    --text-selection: #aaaaaa;
 }
 
 html, body {

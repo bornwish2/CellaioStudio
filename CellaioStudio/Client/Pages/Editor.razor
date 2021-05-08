@@ -40,10 +40,16 @@
         </div>
     </div>
 
-        <ContextMenu Items="ContextMenuItems"
-                     @bind-IsShown="isContextMenuShown"
-                     X="contextMenuX"
-                     Y="contextMenuY"/>
+    <ContextMenu Items="ContextMenuItems"
+                 @bind-IsShown="isContextMenuShown"
+                 X="contextMenuX"
+                 Y="contextMenuY" />
+
+    <LengthText X="lengthTextX"
+                Y="lengthTextY"
+                @bind-IsShown="isLengthTextShown"
+                @bind-Value="LengthValue"
+                @onfocusout="FinishedLengthEdit" />
 
     <div id="threejscontainer">
 
@@ -59,13 +65,34 @@
     bool isContextMenuShown;
     int contextMenuX, contextMenuY;
 
+    bool isLengthTextShown;
+    int lengthTextX = 400, lengthTextY = 500;
+
     List<ContextMenuItem> CreateContextMenuItems()
     {
         return new List<ContextMenuItem>()
-    {
+{
             new ContextMenuItem("Rotate", async () => await RotateShelve()),
             new ContextMenuItem("Remove", async () => await RemoveShelve())
         };
+    }
+
+    internal double LengthValue
+    {
+        get => lengthValue;
+        set
+        {
+            if (lengthValue == value) return;
+            lengthValue = value;
+            JSRuntime.InvokeVoidAsync("editor.setLength", value / 100);
+        }
+    }
+    private double lengthValue;
+
+    private async Task FinishedLengthEdit()
+    {
+        isLengthTextShown = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     [JSInvokable]
@@ -82,6 +109,24 @@
     public async Task HideContextMenu()
     {
         isContextMenuShown = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task ShowLengthEdit(int x, int y, double currentLength)
+    {
+        isLengthTextShown = false;
+        this.lengthValue = currentLength * 100;
+        lengthTextX = x;
+        lengthTextY = y;
+        isLengthTextShown = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task HideLengthEdit()
+    {
+        isLengthTextShown = false;
         await InvokeAsync(StateHasChanged);
     }
 
