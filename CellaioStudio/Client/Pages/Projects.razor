@@ -1,7 +1,36 @@
-﻿@page "/projects" 
+﻿@page "/projects"
+@inject NavigationManager navManager
+@inject IProjectsRepository projectsRepository
 
-<h3>Projects</h3>
+<div class="projects-container">
+    <h3>Projects</h3>
+
+    @if (projects != null)
+    {
+        @foreach (var project in projects)
+        {
+            <div class="project-item"
+                 @onclick="() => OpenProject(project.ID)">
+                @project.Title (#@project.ID)
+            </div>
+        }
+    }
+</div>
 
 @code {
+    private List<Project> projects;
 
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await projectsRepository.GetProjects();
+        await base.OnInitializedAsync();
+    }
+
+    private void OpenProject(int id)
+    {
+        if (id == ExampleProject.ExampleProjectID)
+            navManager.NavigateTo("editor/example");
+        else
+            navManager.NavigateTo($"editor/{id}");
+    }
 }

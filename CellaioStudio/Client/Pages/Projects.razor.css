@@ -1,0 +1,24 @@
+﻿.projects-container {
+   padding: 1rem;
+}
+
+.project-item {
+    background: var(--item-background);
+    box-shadow: 0 0 10px var(--item-shadow);
+    color: var(--foreground);
+    padding: 0.5rem;
+    margin: 1rem;
+    width: 250px;
+    min-height: 100px;
+    line-height: 100px;
+    max-height: 200px;
+    cursor: pointer;
+    border: 0;
+    border-radius: 6px;
+    text-align: center;
+    vertical-align: central;
+}
+
+.project-item:hover {
+    background: var(--item-background-hover);
+}

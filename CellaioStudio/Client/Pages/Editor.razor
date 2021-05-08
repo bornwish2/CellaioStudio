@@ -1,7 +1,8 @@
 ﻿@page "/"
 @page "/editor"
+@page "/editor/{ProjectID}"
 @inject IJSRuntime JSRuntime
-
+@inject IProjectsRepository projectsRepository
 
 <div class="editor-container">
     <div class="toolbar-container">
@@ -13,22 +14,10 @@
         </div>
         <div>
             <button class="btn-tool btn btn-primary btn-sm"
-                    @onclick="ShowExample">
-                Example
+                    @onclick="SaveScene">
+                Save
             </button>
         </div>
-        <div>
-            <button class="btn-tool btn btn-primary btn-sm"
-                    @onclick="DownloadScene">
-                Download
-            </button>
-        </div>
-        @*<div>
-                <button class="btn-tool btn btn-primary btn-sm"
-                        @onclick="SaveScene">
-                    Save
-                </button>
-            </div>*@
         <div>
             <button class="btn-tool btn btn-primary btn-sm"
                     onclick="document.getElementById('inputFile').click()">
@@ -51,14 +40,14 @@
                 @bind-Value="LengthValue"
                 @onfocusout="FinishedLengthEdit" />
 
-    <div id="threejscontainer">
-
-    </div>
-
+    @*ThreeJS*@
+    <div id="threejscontainer"></div>
 
 </div>
 
 @code {
+    [Parameter] public string ProjectID { get; set; }
+
     public List<ContextMenuItem> ContextMenuItems => contextMenuItems
         ?? (contextMenuItems = CreateContextMenuItems());
     private List<ContextMenuItem> contextMenuItems;
@@ -133,7 +122,16 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            await JSRuntime.InvokeAsync<Editor>("editor.load", DotNetObjectReference.Create(this));
+        {
+            await JSRuntime.InvokeVoidAsync("editor.load", DotNetObjectReference.Create(this));
+            if (!string.IsNullOrEmpty(ProjectID))
+            {
+                Console.WriteLine("Opening project: " + ProjectID);
+                if (ProjectID == ExampleProject.ExampleProjectID.ToString()
+                    || ProjectID.Contains("example"))
+                    await ShowExample();
+            }
+        }
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -166,13 +164,6 @@
             .ReadAsync(content, 0, content.Length);
         var json = System.Text.Encoding.UTF8.GetString(content);
         await JSRuntime.InvokeVoidAsync("editor.loadFromJson", json);
-    }
-
-    private async Task DownloadScene()
-    {
-        var json = await JSRuntime.InvokeAsync<System.Text.Json.JsonElement>("editor.serializeScene");
-        var bytes = System.Text.Encoding.UTF8.GetBytes(json.GetRawText());
-        await JSRuntime.SaveAsFile(bytes, "project.json");
     }
 
     private async Task SaveScene()
