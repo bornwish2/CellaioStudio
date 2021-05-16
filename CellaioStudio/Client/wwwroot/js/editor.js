@@ -44,6 +44,9 @@ function loadScene(dotnetInstance) {
     container.addEventListener('mouseup', onDocumentMouseUp, false);
     container.addEventListener('contextmenu', onContextMenu, false);
     container.addEventListener('dblclick', onDoubleClick, false);
+    container.addEventListener('touchstart', onTouchStart, false);
+    container.addEventListener('touchend', onTouchEnd, false);
+    container.addEventListener('touchmove', onTouchMove, false);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -197,7 +200,7 @@ function onMouseMove(event) {
     if (isDragging) {
         if (controls.enabled)
             controls.enabled = false;
-        handleDrag(event);
+        handleDrag(event.offsetX, event.offsetY);
         return;
     }
 
@@ -232,6 +235,43 @@ function onDocumentMouseDown(event) {
     mousedown = 1;
     event.preventDefault;
     handleClick(event.offsetX, event.offsetY);
+}
+
+function onTouchStart(e) {
+    mousedown = 1;
+    event.preventDefault;
+    var rect = e.target.getBoundingClientRect();
+    var x = e.targetTouches[0].pageX - rect.left;
+    var y = e.targetTouches[0].pageY - rect.top;
+    handleClick(x, y);
+}
+
+function onTouchEnd(event) {
+    mousedown = 0;
+    controls.enabled = true;
+    if (!isDragging) return;
+
+    isDragging = false;
+    dragStart = null;
+    if (selectedShelve == null) return;
+    selectedShelve.material.color.setRGB(1, 1, 1);
+    selectedShelve = null;
+}
+
+function onTouchMove(event) {
+    if (!isDragging && selectedShelve != null && mousedown) {
+        isDragging = true;
+    }
+
+    if (isDragging) {
+        if (controls.enabled)
+            controls.enabled = false;
+        var rect = e.target.getBoundingClientRect();
+        var x = e.targetTouches[0].pageX - rect.left;
+        var y = e.targetTouches[0].pageY - rect.top;
+        handleDrag(x, y);
+        return;
+    }
 }
 
 function onContextMenu(event) {
@@ -282,23 +322,23 @@ function onDocumentMouseUp(event) {
     selectedShelve = null;
 }
 
-function handleDrag(event) {
+function handleDrag(x, y) {
 
     if (!isDragging) return;
 
     if (dragStart == null) {
         dragStart = new THREE.Vector2();
-        dragStart.x = event.offsetX;
-        dragStart.y = event.offsetY;
+        dragStart.x = x;
+        dragStart.y = y;
 
         lastMousePoint = new THREE.Vector2();
         lastMousePoint.x = dragStart.x;
         lastMousePoint.y = dragStart.y;
     }
 
-    var diffX = lastMousePoint.x - event.offsetX;
+    var diffX = lastMousePoint.x - x;
     diffX /= container.clientWidth;
-    var diffY = lastMousePoint.y - event.offsetY;
+    var diffY = lastMousePoint.y - y;
     diffY /= container.clientHeight;
 
     var newX = selectedShelve.position.x + (-1) * 6 * diffX;
@@ -309,8 +349,8 @@ function handleDrag(event) {
     selectedShelve.position.x = newPoint.x;
     selectedShelve.position.y = newPoint.y;
 
-    lastMousePoint.x = event.offsetX;
-    lastMousePoint.y = event.offsetY;
+    lastMousePoint.x = x;
+    lastMousePoint.y = y;
 }
 
 function validateCoordinates(point, z, shelve) {
