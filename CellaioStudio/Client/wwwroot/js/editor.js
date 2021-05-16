@@ -244,6 +244,9 @@ function onTouchStart(e) {
     var x = e.targetTouches[0].pageX - rect.left;
     var y = e.targetTouches[0].pageY - rect.top;
     handleClick(x, y);
+
+    if (selectedShelve != null)
+        controls.enabled = false;
 }
 
 function onTouchEnd(event) {
@@ -258,7 +261,7 @@ function onTouchEnd(event) {
     selectedShelve = null;
 }
 
-function onTouchMove(event) {
+function onTouchMove(e) {
     if (!isDragging && selectedShelve != null && mousedown) {
         isDragging = true;
     }
