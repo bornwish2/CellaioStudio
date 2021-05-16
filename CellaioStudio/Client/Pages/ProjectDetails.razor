@@ -1,0 +1,52 @@
+﻿@page "/projects/{ProjectID:int}"
+@inject NavigationManager navManager
+@inject IProjectsRepository projectsRepository
+
+@if (project is null)
+{
+    <div style="color: red;">
+        Couldn't find project with ID: @ProjectID
+    </div>
+}
+else
+{
+    <div style="margin: 10px;">
+        <button class=" btn btn-primary" @onclick="Back"> Back </button>
+        <button class=" btn btn-primary" @onclick="Edit"> Edit </button>
+        <button class=" btn btn-danger" @onclick="Remove"> Remove </button>
+    </div>
+    <div style="margin:10px;">
+        @project.Title (#@project.ID)
+    </div>
+
+    <div class="project-details-image">
+        <img src="@project.Thumbnail" style="width: 100%;" alt="" />
+    </div>
+}
+
+@code {
+    [Parameter] public int ProjectID { get; set; }
+    Project project;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.project = await projectsRepository.GetProject(ProjectID);
+        await base.OnInitializedAsync();
+    }
+
+    private void Edit()
+    {
+        navManager.NavigateTo($"editor/{ProjectID}");
+    }
+
+    private void Back()
+    {
+        navManager.NavigateTo("projects");
+    }
+
+    private async Task Remove()
+    {
+        await projectsRepository.DeleteProject(ProjectID);
+        Back();
+    }
+}

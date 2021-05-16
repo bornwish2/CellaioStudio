@@ -7,5 +7,10 @@ namespace CellaioStudio.Client.Services
     public interface IProjectsRepository
     {
         Task<List<Project>> GetProjects();
+        Task<Project> GetProject(int id);
+        Task<string> GetProjectContent(int id);
+        Task<Project> Create();
+        Task DeleteProject(int id);
+        Task SaveProject(Project project);
     }
 }

@@ -1,11 +1,9 @@
+using CellaioStudio.Server.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
 
 namespace CellaioStudio.Server
 {
@@ -23,8 +21,10 @@ namespace CellaioStudio.Server
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddHttpContextAccessor();
             services.AddControllersWithViews();
             services.AddRazorPages();
+            services.AddScoped<IFileStorageService, InAppStorageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

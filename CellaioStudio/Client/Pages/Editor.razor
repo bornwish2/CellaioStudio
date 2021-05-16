@@ -14,8 +14,8 @@
         </div>
         <div>
             <button class="btn-tool btn btn-primary btn-sm"
-                    @onclick="SaveScene">
-                Save
+                    @onclick="DownloadScene">
+                Download
             </button>
         </div>
         <div>
@@ -33,6 +33,15 @@
                 Snapshot
             </button>
         </div>
+        @if (!string.IsNullOrEmpty(ProjectID) && !ProjectID.Contains("example"))
+        {
+            <div>
+                <button class="btn-tool btn btn-success btn-sm"
+                        @onclick="SaveScene">
+                    Save
+                </button>
+            </div>
+        }
     </div>
 
     <ContextMenu Items="ContextMenuItems"
@@ -49,10 +58,19 @@
     @*ThreeJS*@
     <div id="threejscontainer"></div>
 
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="oi spinner-border"
+                 style="color: white; width: 80px; height: 80px; margin: auto;"></div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string ProjectID { get; set; }
+    Project editedProject;
+    bool isLoading;
 
     public List<ContextMenuItem> ContextMenuItems => contextMenuItems
         ?? (contextMenuItems = CreateContextMenuItems());
@@ -132,10 +150,30 @@
             await JSRuntime.InvokeVoidAsync("editor.load", DotNetObjectReference.Create(this));
             if (!string.IsNullOrEmpty(ProjectID))
             {
-                Console.WriteLine("Opening project: " + ProjectID);
-                if (ProjectID == ExampleProject.ExampleProjectID.ToString()
-                    || ProjectID.Contains("example"))
-                    await ShowExample();
+                isLoading = true;
+                await InvokeAsync(StateHasChanged);
+                try
+                {
+                    Console.WriteLine("Opening project: " + ProjectID);
+                    if (ProjectID == ExampleProject.ExampleProjectID.ToString()
+                        || ProjectID.Contains("example"))
+                        await ShowExample();
+                    else if (int.TryParse(ProjectID, out int id))
+                    {
+                        isLoading = true;
+                        await InvokeAsync(StateHasChanged);
+                        editedProject = await projectsRepository.GetProject(id);
+                        editedProject.Content = await projectsRepository.GetProjectContent(id);
+                        var json = editedProject.Content;
+                        if (!string.IsNullOrEmpty(json))
+                            await JSRuntime.InvokeVoidAsync("editor.loadFromJson", json);
+                    }
+                }
+                finally
+                {
+                    isLoading = false;
+                    await InvokeAsync(StateHasChanged);
+                }
             }
         }
 
@@ -172,7 +210,7 @@
         await JSRuntime.InvokeVoidAsync("editor.loadFromJson", json);
     }
 
-    private async Task SaveScene()
+    private async Task DownloadScene()
     {
         var json = await JSRuntime.InvokeAsync<System.Text.Json.JsonElement>("editor.serializeScene");
         var bytes = System.Text.Encoding.UTF8.GetBytes(json.GetRawText());
@@ -186,11 +224,30 @@
             var snapshot = await JSRuntime.InvokeAsync<string>("editor.saveSnapshot");
             var data = snapshot.Split(',')[1];
             var bytes = Convert.FromBase64String(data);
-            await JSRuntime.SaveAsFile(bytes, "snapshot.jpeg");
+            await JSRuntime.SaveAsFile(bytes, "snapshot.jpg");
         }
         catch (Exception x)
         {
             Console.WriteLine(x.Message);
         }
+    }
+
+    private async Task SaveScene()
+    {
+        if (editedProject is null) return;
+
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(300);
+
+        var snapshot = await JSRuntime.InvokeAsync<string>("editor.saveSnapshot");
+        var data = snapshot.Split(',')[1];
+        var json = await JSRuntime.InvokeAsync<System.Text.Json.JsonElement>("editor.serializeScene");
+
+        editedProject.Thumbnail = data;
+        editedProject.Content = json.GetRawText();
+        await projectsRepository.SaveProject(editedProject);
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
     }
 }
