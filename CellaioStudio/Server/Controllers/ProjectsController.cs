@@ -33,7 +33,7 @@ namespace CellaioStudio.Server.Controllers
             if (files.Count > 20)
                 return Unauthorized();
 
-            var id = await GetNewID();
+            var id = await GetNewIdPriv();
             var fileName = $"{id}.meta";
 
             var bytes = System.Text.Encoding.UTF8.GetBytes("Title=Project");
@@ -127,7 +127,7 @@ namespace CellaioStudio.Server.Controllers
             return json;
         }
 
-        private async Task<int> GetNewID()
+        private async Task<int> GetNewIdPriv()
         {
             var files =  await fileStorageService.GetFiles("projects");
             var ids = GetIDs(files);
@@ -160,6 +160,13 @@ namespace CellaioStudio.Server.Controllers
                 await fileStorageService.DeleteFile(json, "projects");
 
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("newid")]
+        public async Task<int> GetNewId()
+        {
+            return await GetNewIdPriv();
         }
     }
 }

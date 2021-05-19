@@ -9,6 +9,7 @@ namespace CellaioStudio.Client.Services
         Task<List<Project>> GetProjects();
         Task<Project> GetProject(int id);
         Task<string> GetProjectContent(int id);
+        Task<int> GetNewId();
         Task<Project> Create();
         Task DeleteProject(int id);
         Task SaveProject(Project project);

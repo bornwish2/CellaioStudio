@@ -33,15 +33,12 @@
                 Snapshot
             </button>
         </div>
-        @if (!string.IsNullOrEmpty(ProjectID) && !ProjectID.Contains("example"))
-        {
-            <div>
-                <button class="btn-tool btn btn-success btn-sm"
-                        @onclick="SaveScene">
-                    Save
-                </button>
-            </div>
-        }
+        <div>
+            <button class="btn-tool btn btn-success btn-sm"
+                    @onclick="SaveScene">
+                Save
+            </button>
+        </div>
     </div>
 
     <ContextMenu Items="ContextMenuItems"
@@ -65,12 +62,28 @@
                  style="color: white; width: 80px; height: 80px; margin: auto;"></div>
         </div>
     }
+    else if (saveAs)
+    {
+        <div class="loading-container">
+            <div class="saveas-prompt">
+                <div class="saveas-title">
+                    Please insert project's title:
+                </div>
+                <div>
+                    <input class="saveas-input" @bind-value="editedProject.Title" />
+                </div>
+                <div style="float: left; margin: 5px 20px 20px 15px;">
+                    <button class="btn btn-success" @onclick="ConfirmSaveAs"> Save </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string ProjectID { get; set; }
     Project editedProject;
-    bool isLoading;
+    bool isLoading, saveAs;
 
     public List<ContextMenuItem> ContextMenuItems => contextMenuItems
         ?? (contextMenuItems = CreateContextMenuItems());
@@ -234,7 +247,12 @@
 
     private async Task SaveScene()
     {
-        if (editedProject is null) return;
+
+        if (string.IsNullOrEmpty(ProjectID) && editedProject is null)
+        {
+            await SaveSceneAs();
+            return;
+        }
 
         isLoading = true;
         await InvokeAsync(StateHasChanged);
@@ -249,5 +267,23 @@
         await projectsRepository.SaveProject(editedProject);
         isLoading = false;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveSceneAs()
+    {
+        this.editedProject = new Project();
+        saveAs = true;
+        await Task.CompletedTask;
+    }
+
+    private async Task ConfirmSaveAs()
+    {
+        var newId = await projectsRepository.GetNewId();
+        if (newId <= 0) return;
+
+        this.editedProject.ID = newId;
+        this.ProjectID = newId.ToString();
+        await SaveScene();
+        saveAs = false;
     }
 }

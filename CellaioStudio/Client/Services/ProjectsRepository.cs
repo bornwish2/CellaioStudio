@@ -93,5 +93,17 @@ namespace CellaioStudio.Client.Services
 
             }
         }
+
+        public async Task<int> GetNewId()
+        {
+            var response = await httpClient.GetAsync($"{Url}/newid");
+            if (response.IsSuccessStatusCode)
+            {
+                var str = await response.Content.ReadAsStringAsync();
+                return int.Parse(str);
+            }
+
+            return -1;
+        }
     }
 }

@@ -29,3 +29,26 @@
     background-color: rgba(0,0,0,0.7);
     z-index: 20;
 }
+
+.saveas-prompt {
+    min-width: 150px;
+    align-items: center;
+    margin: auto;
+    background-color: rgb(22,22,22);
+    border-radius: 10px;
+}
+
+.saveas-input {
+    margin: 5px 15px 5px 15px;
+    padding: 3px;
+    background: rgb(11,11,11);
+    color: var(--foreground);
+    border: rgb(50,50,50);
+    border-radius: 3px;
+    outline: 0;
+}
+
+.saveas-title {
+    margin: 10px 10px 3px 10px;
+    padding: 5px 5px 0 5px;
+}
