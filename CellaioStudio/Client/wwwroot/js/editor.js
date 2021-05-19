@@ -10,7 +10,8 @@ var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
 var shelves, selectedShelve;
-var isDragging, dragStart, lastMousePoint, mousedown = 0;
+var isDragging, dragStart, dragPlane, lastMousePoint, mousedown = 0;
+var lastTouchTime, touchTimer;
 const shelveThickness = 0.0682;
 
 var dotnetEditor;
@@ -238,30 +239,54 @@ function onDocumentMouseDown(event) {
 }
 
 function onTouchStart(e) {
+
+    touchTimer = setTimeout(onLongTouch, 500);
+
     mousedown = 1;
     event.preventDefault;
     var rect = e.target.getBoundingClientRect();
     var x = e.targetTouches[0].pageX - rect.left;
     var y = e.targetTouches[0].pageY - rect.top;
     handleClick(x, y);
+    mouseVector.x = x;
+    mouseVector.y = y;
 
     if (selectedShelve != null)
         controls.enabled = false;
+
+    var now = new Date().getTime();
+    var timesince = now - lastTouchTime;
+    if ((timesince < 600) && (timesince > 0)) {
+
+        // TODO: double tap   
+        if (selectedShelve != null) {
+            showLengthEdit(Math.floor(x), Math.floor(y), selectedShelve.geometry.parameters.width);
+        }
+    }
+
+    lastTouchTime = new Date().getTime();
 }
 
-function onTouchEnd(event) {
+function onTouchEnd(e) {
+
     mousedown = 0;
     controls.enabled = true;
+    if (touchTimer)
+        clearTimeout(touchTimer);
     if (!isDragging) return;
 
     isDragging = false;
     dragStart = null;
     if (selectedShelve == null) return;
+
     selectedShelve.material.color.setRGB(1, 1, 1);
     selectedShelve = null;
 }
 
 function onTouchMove(e) {
+    if (touchTimer)
+        clearTimeout(touchTimer);
+
     if (!isDragging && selectedShelve != null && mousedown) {
         isDragging = true;
     }
@@ -275,6 +300,11 @@ function onTouchMove(e) {
         handleDrag(x, y);
         return;
     }
+}
+
+function onLongTouch() {
+    if (selectedShelve == null) return;
+    showContextMenu(Math.floor(mouseVector.x), Math.floor(mouseVector.y));
 }
 
 function onContextMenu(event) {
@@ -308,6 +338,8 @@ function handleClick(x, y) {
         return;
     }
 
+    //dragPlane = new THREE.PlaneBufferGeometry();
+    //dragPlane.position.z = intersects[0].point.z;
     selectedShelve = intersects[0].object;
     selectedShelve.material.color.setRGB(1, 0, 0);
 }
@@ -341,11 +373,21 @@ function handleDrag(x, y) {
 
     var diffX = lastMousePoint.x - x;
     diffX /= container.clientWidth;
+    diffX *= (-6);
     var diffY = lastMousePoint.y - y;
     diffY /= container.clientHeight;
+    diffY *= 4;
 
-    var newX = selectedShelve.position.x + (-1) * 6 * diffX;
-    var newY = selectedShelve.position.y + 4 * diffY;
+    var newX = selectedShelve.position.x + diffX;
+    var newY = selectedShelve.position.y + diffY;
+
+    //raycaster.setFromCamera(mouseVector, camera);
+    //var intersects = raycaster.intersectObjects(dragPlane);
+    //if (intersects.length > 0) {
+    //    newX = intersects[0].point.x;
+    //    newY = intersects[0].point.y;
+    //}
+
     var newPoint = { x: newX, y: newY };
     validateCoordinates(newPoint, selectedShelve.position.z, selectedShelve);
 
