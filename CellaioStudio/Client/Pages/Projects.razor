@@ -3,45 +3,47 @@
 @inject IProjectsRepository projectsRepository
 @inject IJSRuntime JSRuntime
 
-<div class="projects-title">
-    <h3>Projects</h3>
-</div>
-<div class="projects-toolbar">
-    <button class="btn btn-primary"
-            @onclick="CreateNew">
-        + New
-    </button>
-</div>
-<div class="projects-container">
+<div class="projects-root">
+    <div class="projects-title">
+        <h3>Projects</h3>
+    </div>
+    <div class="projects-toolbar">
+        <button class="btn btn-primary"
+                @onclick="CreateNew">
+            + New
+        </button>
+    </div>
+    <div class="projects-container">
 
-    @if (projects != null)
-    {
-        @foreach (var project in projects)
+        @if (projects != null)
         {
-            <div class="project-item"
-                 @onclick="() => OpenProject(project.ID)">
-                <div class="project-image">
-                    <img src="@project.Thumbnail" style="height: 100%;" alt="" />
-                </div>
-                <div class="project-text">
-                    @project.Title (#@project.ID)
-                </div>
+            @foreach (var project in projects)
+            {
+                <div class="project-item"
+                     @onclick="() => OpenProject(project.ID)">
+                    <div class="project-image">
+                        <img src="@project.Thumbnail" style="height: 100%;" alt="" />
+                    </div>
+                    <div class="project-text">
+                        @project.Title (#@project.ID)
+                    </div>
 
-                @if (project.ID > 0)
-                {
-                    <button class="project-delete-container"
-                            @onclick="() => DeleteProject(project)"
-                            @onclick:preventDefault="true"
-                            @onclick:stopPropagation="true">
-                        <div class="oi oi-trash" style="color: red; width: 20px; height: 20px;"></div>
-                    </button>
-                }
-            </div>
+                    @if (project.ID > 0)
+                    {
+                        <button class="project-delete-container"
+                                @onclick="() => DeleteProject(project)"
+                                @onclick:preventDefault="true"
+                                @onclick:stopPropagation="true">
+                            <div class="oi oi-trash" style="color: red; width: 20px; height: 20px;"></div>
+                        </button>
+                    }
+                </div>
+            }
         }
-    }
-</div>
-<div style="height: 3rem">
+    </div>
+    <div style="height: 3rem">
 
+    </div>
 </div>
 @code {
     private List<Project> projects;

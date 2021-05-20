@@ -1,4 +1,9 @@
-﻿.projects-container {
+﻿.projects-root {
+    height: 100%;
+    overflow: auto;
+}
+
+.projects-container {
    padding: 1rem;
    display: flex;
    flex-wrap: wrap;

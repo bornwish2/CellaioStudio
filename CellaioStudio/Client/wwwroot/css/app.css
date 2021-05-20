@@ -36,7 +36,6 @@ a, .btn-link {
 
 .content {
     height: 100%;
-    overflow: auto;
 }
 
 .valid.modified:not([type=checkbox]) {
