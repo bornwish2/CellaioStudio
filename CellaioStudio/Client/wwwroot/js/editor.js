@@ -322,6 +322,9 @@ function onDoubleClick(event) {
 
 function handleClick(x, y) {
 
+    if (isLengthEdited)
+        hideLengthEdit();
+
     mouseVector.x = 2 * (x / container.clientWidth) - 1;
     mouseVector.y = 1 - 2 * (y / container.clientHeight);
 
@@ -478,10 +481,13 @@ function hideContextMenu() {
     dotnetEditor.invokeMethodAsync('HideContextMenu');
 }
 
+var isLengthEdited;
 function showLengthEdit(x, y, length) {
+    isLengthEdited = true;
     dotnetEditor.invokeMethodAsync('ShowLengthEdit', x, y, length);
 }
 function hideLengthEdit() {
+    isLengthEdited = false;
     dotnetEditor.invokeMethodAsync('HideLengthEdit');
 }
 
