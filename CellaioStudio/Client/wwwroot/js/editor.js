@@ -9,10 +9,13 @@ var raycaster, mouseVector;
 var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
-var shelves, selectedShelve;
+var shelves, selectedShelve, anchors, selectedAnchor;
 var isDragging, dragStart, dragPlane, lastMousePoint, mousedown = 0;
 var lastTouchTime, touchTimer;
+var contextMenuOpened;
+
 const shelveThickness = 0.0682;
+const shelveDepth = 0.4;
 
 var dotnetEditor;
 
@@ -38,7 +41,9 @@ function loadScene(dotnetInstance) {
     raycaster = new THREE.Raycaster();
     mouseVector = new THREE.Vector2();
     shelves = new THREE.Object3D();
+    anchors = new THREE.Object3D();
     scene.add(shelves);
+    scene.add(anchors);
 
     container.addEventListener('mousemove', onMouseMove, false);
     container.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -132,7 +137,7 @@ function loadRoom() {
     sealing2.position.y = 2.5;
     sealing2.position.z = -2.5;
     sealing2.position.x = -1.5;
-    
+
 
     scene.add(floor1);
     scene.add(floor2);
@@ -177,8 +182,45 @@ function addShelve() {
     var shv = createShelve(1, 0.4);
     shv.position.set(0.75, 1, 0.2);
     shelves.add(shv);
+}
 
-    //scene.add(shv);
+function addAnchors() {
+    if (selectedShelve == null) return;
+    while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
+
+    var z = shelveDepth / 2;
+    if (selectedShelve.rotation.z == 0) {
+        var x1 = selectedShelve.position.x - selectedShelve.geometry.parameters.width / 2;
+        var x2 = selectedShelve.position.x + selectedShelve.geometry.parameters.width / 2;
+        var y = selectedShelve.position.y;
+        var anc1 = createAnchor(x1, y, z);
+        var anc2 = createAnchor(x2, y, z);
+        anchors.add(anc1);
+        anchors.add(anc2);
+    }
+    else {
+        var x = selectedShelve.position.x;
+        var y1 = selectedShelve.position.y - selectedShelve.geometry.parameters.width / 2;
+        var y2 = selectedShelve.position.y + selectedShelve.geometry.parameters.width / 2;
+        var anc1 = createAnchor(x, y1, z, true);
+        var anc2 = createAnchor(x, y2, z, true);
+        anchors.add(anc1);
+        anchors.add(anc2);
+    }
+}
+
+function createAnchor(x, y, z, rotateX) {
+    var geometry = new THREE.BoxGeometry(shelveDepth, shelveThickness, 0.01);
+    var material = new THREE.MeshLambertMaterial({ color: new THREE.Color(1.1, 1.1, 1.1) });
+    material.side = THREE.DoubleSide;
+    material.transparent = true;
+    material.opacity = 0;
+    var plane = new THREE.Mesh(geometry, material);
+    plane.rotateY(Math.PI / 2);
+    if (rotateX)
+        plane.rotateX(Math.PI / 2);
+    plane.position.set(x, y, z);
+    return plane;
 }
 
 function handleResizing() {
@@ -223,6 +265,22 @@ function onMouseMove(event) {
             obj.material.color.setRGB(0.7, 0.8, 1);
     }
 
+    if (selectedShelve != null) {
+        for (var i = 0; i < anchors.children.length; i++) {
+            if (anchors.children[i] != selectedAnchor) {
+                anchors.children[i].material.transparent = true;
+            }
+        }
+
+        var anchorIntersects = raycaster.intersectObjects(anchors.children);
+        if (anchorIntersects.length > 0) {
+            var anch = anchorIntersects[0].object;
+            anch.material.transparent = false;
+            renderer.domElement.style.cursor = 'pointer';
+            return;
+        }
+    }
+
     if (intersects.length > 0) {
         renderer.domElement.style.cursor = 'pointer';
     }
@@ -259,9 +317,9 @@ function onTouchStart(e) {
     if ((timesince < 600) && (timesince > 0)) {
 
         // TODO: double tap   
-        if (selectedShelve != null) {
-            showLengthEdit(Math.floor(x), Math.floor(y), selectedShelve.geometry.parameters.width);
-        }
+        //if (selectedShelve != null) {
+        //    showLengthEdit(Math.floor(x), Math.floor(y), selectedShelve.geometry.parameters.width);
+        //}
     }
 
     lastTouchTime = new Date().getTime();
@@ -273,14 +331,25 @@ function onTouchEnd(e) {
     controls.enabled = true;
     if (touchTimer)
         clearTimeout(touchTimer);
+
+    if (!contextMenuOpened) {
+        // show anchors
+        addAnchors();
+        for (var i = 0; i < anchors.children.length; i++) {
+            anchors.children[i].material.transparent = false;
+        }
+    }
+
     if (!isDragging) return;
 
     isDragging = false;
     dragStart = null;
-    if (selectedShelve == null) return;
+    selectedAnchor = null;
 
-    selectedShelve.material.color.setRGB(1, 1, 1);
-    selectedShelve = null;
+    //if (selectedShelve == null) return;
+
+    //selectedShelve.material.color.setRGB(1, 1, 1);
+    //while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
 }
 
 function onTouchMove(e) {
@@ -303,7 +372,7 @@ function onTouchMove(e) {
 }
 
 function onLongTouch() {
-    if (selectedShelve == null) return;
+    if (selectedShelve == null || selectedAnchor != null) return;
     showContextMenu(Math.floor(mouseVector.x), Math.floor(mouseVector.y));
 }
 
@@ -317,7 +386,7 @@ function onDoubleClick(event) {
     handleClick(event.offsetX, event.offsetY);
     if (selectedShelve == null) return;
 
-    showLengthEdit(event.offsetX, event.offsetY, selectedShelve.geometry.parameters.width);
+    //showLengthEdit(event.offsetX, event.offsetY, selectedShelve.geometry.parameters.width);
 }
 
 function handleClick(x, y) {
@@ -331,11 +400,15 @@ function handleClick(x, y) {
     raycaster.setFromCamera(mouseVector, camera);
     var intersects = raycaster.intersectObjects(shelves.children);
 
-    if (selectedShelve != null)
-        selectedShelve.material.color.setRGB(1, 1, 1);
+    var addingAnchors = true;
+    if (selectedShelve != null) {
+        addingAnchors = false;
+        selectedShelve.material.opacity = 1;
+    }
 
     if (intersects.length == 0) {
         selectedShelve = null;
+        while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
         hideContextMenu();
         hideLengthEdit();
         return;
@@ -343,8 +416,18 @@ function handleClick(x, y) {
 
     //dragPlane = new THREE.PlaneBufferGeometry();
     //dragPlane.position.z = intersects[0].point.z;
+    if (intersects[0].object == selectedShelve)
+        addingAnchors = false;
     selectedShelve = intersects[0].object;
-    selectedShelve.material.color.setRGB(1, 0, 0);
+    selectedShelve.material.transparent = true;
+    selectedShelve.material.opacity = 0.8;
+    if (addingAnchors == true)
+        addAnchors();
+
+    var anchorIntersects = raycaster.intersectObjects(anchors.children);
+    if (anchorIntersects.length > 0) {
+        selectedAnchor = anchorIntersects[0].object;
+    }
 }
 
 function onDocumentMouseUp(event) {
@@ -356,8 +439,10 @@ function onDocumentMouseUp(event) {
     isDragging = false;
     dragStart = null;
     if (selectedShelve == null) return;
-    selectedShelve.material.color.setRGB(1, 1, 1);
+    selectedShelve.material.opacity = 1;
     selectedShelve = null;
+    selectedAnchor = null;
+    while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
 }
 
 function handleDrag(x, y) {
@@ -381,6 +466,17 @@ function handleDrag(x, y) {
     diffY /= container.clientHeight;
     diffY *= 4;
 
+    if (selectedAnchor != null) {
+        if (selectedShelve.rotation.z != 0) {
+            diffX = 0;
+            diffY /= 2;
+        }
+        else {
+            diffX /= 2;
+            diffY = 0;
+        }
+    }
+
     var newX = selectedShelve.position.x + diffX;
     var newY = selectedShelve.position.y + diffY;
 
@@ -393,6 +489,22 @@ function handleDrag(x, y) {
 
     var newPoint = { x: newX, y: newY };
     validateCoordinates(newPoint, selectedShelve.position.z, selectedShelve);
+
+    if (selectedAnchor != null) {
+        if (selectedShelve.rotation.z != 0) {
+
+            selectedAnchor.position.y = selectedAnchor.position.y + 2 * diffY;
+            if (selectedAnchor.position.y < selectedShelve.position.y)
+                diffY *= (-1);
+            setShelveLength(selectedShelve.geometry.parameters.width + 2 * diffY);
+        }
+        else {
+            selectedAnchor.position.x = selectedAnchor.position.x + 2 * diffX;
+            if (selectedAnchor.position.x < selectedShelve.position.x)
+                diffX *= (-1);
+            setShelveLength(selectedShelve.geometry.parameters.width + 2 * diffX);
+        }
+    }
 
     selectedShelve.position.x = newPoint.x;
     selectedShelve.position.y = newPoint.y;
@@ -439,7 +551,7 @@ function validateCoordinates(point, z, shelve) {
     }
 }
 
-function createShelve(length, depth = 0.4, thickness = shelveThickness) {
+function createShelve(length, depth = shelveDepth, thickness = shelveThickness) {
     var geometry = new THREE.BoxGeometry(length, thickness, depth);
     var material = new THREE.MeshPhongMaterial({ map: shelveTexture });
     var cube = new THREE.Mesh(geometry, material);
@@ -448,7 +560,13 @@ function createShelve(length, depth = 0.4, thickness = shelveThickness) {
 
 function rotateShelve() {
     if (selectedShelve == null) return;
-    selectedShelve.rotateZ(Math.PI / 2);
+
+    if (selectedShelve.rotation.z != 0)
+        selectedShelve.rotation.z = 0;
+    else
+        selectedShelve.rotateZ(Math.PI / 2);
+
+    addAnchors();
 }
 
 function removeShelve() {
@@ -474,10 +592,12 @@ function showExample() {
 
 function showContextMenu(x, y) {
     hideLengthEdit();
+    contextMenuOpened = true;
     dotnetEditor.invokeMethodAsync('ShowContextMenu', x, y);
 }
 
 function hideContextMenu() {
+    contextMenuOpened = false;
     dotnetEditor.invokeMethodAsync('HideContextMenu');
 }
 
