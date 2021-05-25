@@ -98,6 +98,8 @@ function loadFromJson(json) {
                 shelves = obj;
         }
     });
+
+    scene.add(anchors);
 }
 
 function loadRoom() {
