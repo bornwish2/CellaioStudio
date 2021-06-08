@@ -9,7 +9,7 @@ var raycaster, mouseVector;
 var floor1, floor2, sealing1, sealing2, frontWall, sideWall, backWall;
 
 var shelveTexture = new THREE.TextureLoader().load('textures/wood2.jpg');
-var shelves, selectedShelve, anchors, selectedAnchor;
+var shelves, selectedShelve, selectedAnchor;
 var isDragging, dragStart, dragPlane, lastMousePoint, mousedown = 0;
 var lastTouchTime, touchTimer;
 var contextMenuOpened;
@@ -41,9 +41,7 @@ function loadScene(dotnetInstance) {
     raycaster = new THREE.Raycaster();
     mouseVector = new THREE.Vector2();
     shelves = new THREE.Object3D();
-    anchors = new THREE.Object3D();
     scene.add(shelves);
-    scene.add(anchors);
 
     container.addEventListener('mousemove', onMouseMove, false);
     container.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -98,8 +96,6 @@ function loadFromJson(json) {
                 shelves = obj;
         }
     });
-
-    scene.add(anchors);
 }
 
 function loadRoom() {
@@ -188,27 +184,14 @@ function addShelve() {
 
 function addAnchors() {
     if (selectedShelve == null) return;
-    while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
+    while (selectedShelve.children.length > 0) selectedShelve.remove(selectedShelve.children[0]);
 
-    var z = shelveDepth / 2;
-    if (selectedShelve.rotation.z == 0) {
-        var x1 = selectedShelve.position.x - selectedShelve.geometry.parameters.width / 2;
-        var x2 = selectedShelve.position.x + selectedShelve.geometry.parameters.width / 2;
-        var y = selectedShelve.position.y;
-        var anc1 = createAnchor(x1, y, z);
-        var anc2 = createAnchor(x2, y, z);
-        anchors.add(anc1);
-        anchors.add(anc2);
-    }
-    else {
-        var x = selectedShelve.position.x;
-        var y1 = selectedShelve.position.y - selectedShelve.geometry.parameters.width / 2;
-        var y2 = selectedShelve.position.y + selectedShelve.geometry.parameters.width / 2;
-        var anc1 = createAnchor(x, y1, z, true);
-        var anc2 = createAnchor(x, y2, z, true);
-        anchors.add(anc1);
-        anchors.add(anc2);
-    }
+    var x1 = - selectedShelve.geometry.parameters.width / 2;
+    var x2 = selectedShelve.geometry.parameters.width / 2;
+    var anc1 = createAnchor(x1, 0, 0);
+    var anc2 = createAnchor(x2, 0, 0);
+    selectedShelve.add(anc1);
+    selectedShelve.add(anc2);
 }
 
 function createAnchor(x, y, z, rotateX) {
@@ -268,13 +251,13 @@ function onMouseMove(event) {
     }
 
     if (selectedShelve != null) {
-        for (var i = 0; i < anchors.children.length; i++) {
-            if (anchors.children[i] != selectedAnchor) {
-                anchors.children[i].material.transparent = true;
+        for (var i = 0; i < selectedShelve.children.length; i++) {
+            if (selectedShelve.children[i] != selectedAnchor) {
+                selectedShelve.children[i].material.transparent = true;
             }
         }
 
-        var anchorIntersects = raycaster.intersectObjects(anchors.children);
+        var anchorIntersects = raycaster.intersectObjects(selectedShelve.children);
         if (anchorIntersects.length > 0) {
             var anch = anchorIntersects[0].object;
             anch.material.transparent = false;
@@ -337,8 +320,8 @@ function onTouchEnd(e) {
     if (!contextMenuOpened) {
         // show anchors
         addAnchors();
-        for (var i = 0; i < anchors.children.length; i++) {
-            anchors.children[i].material.transparent = false;
+        for (var i = 0; i < selectedShelve.children.length; i++) {
+            selectedShelve.children[i].material.transparent = false;
         }
     }
 
@@ -410,7 +393,7 @@ function handleClick(x, y) {
 
     if (intersects.length == 0) {
         selectedShelve = null;
-        while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
+        while (selectedShelve.children.length > 0) selectedShelve.remove(selectedShelve.children[0]);
         hideContextMenu();
         hideLengthEdit();
         return;
@@ -426,7 +409,7 @@ function handleClick(x, y) {
     if (addingAnchors == true)
         addAnchors();
 
-    var anchorIntersects = raycaster.intersectObjects(anchors.children);
+    var anchorIntersects = raycaster.intersectObjects(selectedShelve.children);
     if (anchorIntersects.length > 0) {
         selectedAnchor = anchorIntersects[0].object;
     }
@@ -444,7 +427,7 @@ function onDocumentMouseUp(event) {
     selectedShelve.material.opacity = 1;
     selectedShelve = null;
     selectedAnchor = null;
-    while (anchors.children.length > 0) anchors.remove(anchors.children[0]);
+    while (selectedShelve.children.length > 0) selectedShelve.remove(selectedShelve.children[0]);
 }
 
 function handleDrag(x, y) {
@@ -494,17 +477,24 @@ function handleDrag(x, y) {
 
     if (selectedAnchor != null) {
         if (selectedShelve.rotation.z != 0) {
-
-            selectedAnchor.position.y = selectedAnchor.position.y + 2 * diffY;
-            if (selectedAnchor.position.y < selectedShelve.position.y)
+            if (selectedAnchor.position.x < 0)
                 diffY *= (-1);
-            setShelveLength(selectedShelve.geometry.parameters.width + 2 * diffY);
+            var newWidth = selectedShelve.geometry.parameters.width + 2 * diffY;
+            if (selectedAnchor.position.x < 0)
+                selectedAnchor.position.x = - newWidth / 2;
+            else
+                selectedAnchor.position.x = newWidth / 2;
+            setShelveLength(newWidth);
         }
         else {
-            selectedAnchor.position.x = selectedAnchor.position.x + 2 * diffX;
-            if (selectedAnchor.position.x < selectedShelve.position.x)
+            if (selectedAnchor.position.x < 0)
                 diffX *= (-1);
-            setShelveLength(selectedShelve.geometry.parameters.width + 2 * diffX);
+            var newWidth = selectedShelve.geometry.parameters.width + 2 * diffX;
+            if (selectedAnchor.position.x < 0)
+                selectedAnchor.position.x = - newWidth / 2;
+            else
+                selectedAnchor.position.x = newWidth / 2;
+            setShelveLength(newWidth);
         }
     }
 
